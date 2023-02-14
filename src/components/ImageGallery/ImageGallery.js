@@ -1,5 +1,5 @@
-export const ImageGallery = () => {
+export const ImageGallery = ({ children }) => {
     return <ul className="ImageGallery">
-        {/* <!-- Набір <li> із зображеннями --> */}
+        {children}
     </ul>
 }

@@ -1,11 +1,6 @@
-export const Searchbar = () => {
-    const searchImages = (event) => {
-        event.preventDefault()
-        console.log('hallo');
-        event.target.reset()
-    }
+export const Searchbar = ({ onSubmit }) => {
     return <header className="Searchbar">
-        <form className="SearchForm" onSubmit={searchImages}>
+        <form className="SearchForm" onSubmit={onSubmit}>
             <button type="submit" className="SearchForm-button">
                 <span className="SearchForm-button-label">Search</span>
             </button>
@@ -13,8 +8,9 @@ export const Searchbar = () => {
             <input
                 className="SearchForm-input"
                 type="text"
-                autocomplete="off"
-                autofocus
+                name="searchInput"
+                autoComplete="off"
+                autoFocus
                 placeholder="Search images and photos"
             />
         </form>
