@@ -7,50 +7,81 @@ import {Loader} from './Loader/Loader';
 import {Button} from './Button/Button';
 import { Modal } from './Modal/Modal';
 
+const KEY = '32403281-07d99c56a2826923173cf204d';
+
 export class App extends Component {
-  state={
+  state = {
     images: [],
+    page: 1,
+    total: 0,
+    query: '',
+    largeImage: '',
+    modalIsOpen: false
   }
-  onSubmit=(event)=>{
+
+  fetchImages = async (requestName) => {
+    // console.log('first load', this.state.page)
+    try {
+      const request = await axios.get(`https://pixabay.com/api/?q=${requestName}&page=${this.state.page}&key=${KEY}&image_type=photo&orientation=horizontal&per_page=12`);
+      this.setState(prevState=>({ images: [...prevState.images, ...request.data.hits], total: request.data.total }))
+      return request;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  onSubmit = (event) => {
     event.preventDefault();
     const requestName = event.target.searchInput.value;
-    const fetchImages = async () => {
-        const KEY = '32403281-07d99c56a2826923173cf204d';
-        try {
-            const request = await axios.get(`https://pixabay.com/api/?q=${requestName}&page=1&key=${KEY}&image_type=photo&orientation=horizontal&per_page=12`);
-            return request;
-        } catch (error) {
-            console.log(error);
-        }
+    if (this.state.query !== requestName) {
+      this.setState({ query: requestName, page: 1, images: [], total: 0 })
+      this.fetchImages(requestName)
     }
-    const newRequest = async () => {
-      const gotenImages = await fetchImages();
-      this.setState({images: gotenImages.data.hits})
-      return gotenImages 
-    }
-    newRequest();
     event.target.reset();
   }
 
-  render(){ 
+  onClickLoadMore = () => {
+    this.setState(prevState => ({ page: prevState.page + 1 }))
+    // console.log('load more', this.state.page)
+    this.fetchImages(this.state.query)
+  }
+
+  keyPress = (e) => {
+    // console.log('press Escape')
+    if (e.key === "Escape") {
+      this.setState({ modalIsOpen: false })
+      window.removeEventListener('keydown', this.keyPress);
+    }
+  }
+
+  openModal = (image) => {
+    this.setState({ largeImage: image.largeImageURL, modalIsOpen: true })
+    window.addEventListener('keydown', (event) => {
+      this.keyPress(event)
+    });
+  }
+
+  render() { 
+    const { images, page, total, largeImage, modalIsOpen } = this.state;
+    // console.log(page, total)
     return (<div className='App'
-      // style={{
-      //   height: '100vh',
-      //   display: 'flex',
-      //   justifyContent: 'center',
-      //   alignItems: 'center',
-      //   fontSize: 40,
-      //   color: '#010101'
-      // }}
+    // style={{
+    //   height: '100vh',
+    //   display: 'flex',
+    //   justifyContent: 'center',
+    //   alignItems: 'center',
+    //   fontSize: 40,
+    //   color: '#010101'
+    // }}
     >
-      <Searchbar onSubmit ={this.onSubmit}></Searchbar>
+      <Searchbar onSubmit={this.onSubmit}></Searchbar>
       <ImageGallery>
-        <ImageGalleryItem images={this.state.images}/>
+        <ImageGalleryItem images={images} openModal={this.openModal} />
       </ImageGallery>
       <Loader></Loader>
-      <Button></Button>
-      <Modal></Modal>
+      {(page < total/12) && <Button loadMore={this.onClickLoadMore} />}
+      {modalIsOpen && <Modal image={largeImage} />}
     </div>
-  )
-}
+    )
+  }
 }
