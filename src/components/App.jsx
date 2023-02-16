@@ -1,29 +1,11 @@
 import { Component } from 'react';
-import axios from 'axios';
 import {Searchbar} from './Searchbar/Searchbar';
 import {ImageGallery} from './ImageGallery/ImageGallery';
 import {ImageGalleryItem} from './ImageGalleryItem/ImageGalleryItem';
 import {Loader} from './Loader/Loader';
 import {Button} from './Button/Button';
 import { Modal } from './Modal/Modal';
-
-const KEY = '32403281-07d99c56a2826923173cf204d';
-const fetchImages = async (requestName, page) => {
-    console.log('fetchImages', page)
-    try {
-      const request = await axios.get(`https://pixabay.com/api/?q=${requestName}&page=${page}&key=${KEY}&image_type=photo&orientation=horizontal&per_page=12`);
-      return request;
-    } catch (error) {
-      console.log(error);
-    }
-}
-function keyPress(e) {
-  console.log('keyPress')
-  if (e.key === "Escape") {
-    window.removeEventListener('keydown', keyPress)
-    return true
-  }
-}
+import { fetchImages } from './Service/Fetch'
 
 export class App extends Component {
   state = {
@@ -36,33 +18,32 @@ export class App extends Component {
     loading: false
   }
 
+  componentDidUpdate = async (prevProps, prevState) => {
+    if (this.state.query !== prevState.query || this.state.page !== prevState.page) {
+      const request = await fetchImages(this.state.query, this.state.page);
+      this.setState(prevState => ({ images: [...prevState.images, ...request.data.hits], loading: false }))
+    }
+  }
+
   onSubmit = async (event) => {
     event.preventDefault();
     const requestName = event.target.searchInput.value;
     if (this.state.query !== requestName) {
       this.setState({ query: requestName, page: 1, images: [], total: 0, loading: true })
-      const request = await fetchImages(requestName, 1);
-      this.setState({ images: request.data.hits, total: request.data.total, loading: false })
     }
     event.target.reset();
   }
 
-  onClickLoadMore = async () => {
-    console.log('load more before', this.state.page)
-    this.setState({ page: this.state.page + 1 })
-    console.log('first load more', this.state.page)
-    const request = await fetchImages(this.state.query, this.state.page + 1);
-    this.setState(prevState=>({ images: [...prevState.images, ...request.data.hits]}))
-    console.log('second load more', this.state.page)
+  onClickLoadMore = () => {
+    this.setState(prevState=>({ page: prevState.page + 1 }))
   }
 
   openModal = (image) => {
     this.setState({ largeImage: image.largeImageURL, modalIsOpen: true })
-    window.addEventListener('keydown', (event) => {
-      if (keyPress(event)) {
-        this.setState({ modalIsOpen: false })
-      }
-    });
+  }
+
+  closeModal = () => {
+    this.setState({modalIsOpen: false })
   }
 
   render() { 
@@ -75,7 +56,7 @@ export class App extends Component {
       </ImageGallery>
       {loading && <Loader />}
       {(page < total/12) && <Button loadMore={this.onClickLoadMore} />}
-      {modalIsOpen && <Modal image={largeImage} />}
+      {modalIsOpen && <Modal image={largeImage} closeModal={this.closeModal} />}
     </div>
     )
   }
