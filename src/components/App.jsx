@@ -19,13 +19,14 @@ export class App extends Component {
   }
 
   componentDidUpdate = async (prevProps, prevState) => {
-    if (this.state.query !== prevState.query || this.state.page !== prevState.page) {
-      const request = await fetchImages(this.state.query, this.state.page);
-      this.setState(prevState => ({ images: [...prevState.images, ...request.data.hits], loading: false }))
+    const { query, page } = this.state
+    if (query !== prevState.query || page !== prevState.page) {
+      const request = await fetchImages(query, page);
+      this.setState(prevState => ({ images: [...prevState.images, ...request.data.hits], total: request.data.total, loading: false }))
     }
   }
 
-  onSubmit = async (event) => {
+  onSubmit = (event) => {
     event.preventDefault();
     const requestName = event.target.searchInput.value;
     if (this.state.query !== requestName) {
