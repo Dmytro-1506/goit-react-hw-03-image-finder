@@ -18,21 +18,24 @@ export class App extends Component {
     loading: false
   }
 
-  componentDidUpdate = async (prevProps, prevState) => {
+  componentDidUpdate = (prevProps, prevState) => {
     const { query, page } = this.state
     if (query !== prevState.query || page !== prevState.page) {
-      const request = await fetchImages(query, page);
-      this.setState(prevState => ({ images: [...prevState.images, ...request.data.hits], total: request.data.total, loading: false }))
+      this.setState({ loading: true })
+      try {
+        fetchImages(query, page).then(response => {
+          this.setState(prevState => ({ images: [...prevState.images, ...response.data.hits], total: response.data.total }))
+        })
+      } catch (error) {
+        console.log(error);
+      } finally {
+        this.setState({ loading: false })
+      }
     }
   }
 
-  onSubmit = (event) => {
-    event.preventDefault();
-    const requestName = event.target.searchInput.value;
-    if (this.state.query !== requestName) {
-      this.setState({ query: requestName, page: 1, images: [], total: 0, loading: true })
-    }
-    event.target.reset();
+  onSubmit = (requestName) => {
+      this.setState({ query: requestName, page: 1, images: [], total: 0 })
   }
 
   onClickLoadMore = () => {
@@ -48,10 +51,10 @@ export class App extends Component {
   }
 
   render() { 
-    const { images, page, total, largeImage, modalIsOpen, loading } = this.state;
+    const { images, query, page, total, largeImage, modalIsOpen, loading } = this.state;
     return (<div className='App'
     >
-      <Searchbar onSubmit={this.onSubmit}></Searchbar>
+      <Searchbar onSubmit={this.onSubmit} prevRequest={query}></Searchbar>
       <ImageGallery>
         <ImageGalleryItem images={images} openModal={this.openModal} />
       </ImageGallery>

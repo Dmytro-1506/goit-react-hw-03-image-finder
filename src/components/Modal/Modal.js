@@ -1,12 +1,28 @@
-export const Modal = ({ image, closeModal }) => {
-    window.addEventListener('keydown', (event) => {
-        if (event.key === "Escape") {
-            closeModal()
+import { Component } from 'react';
+
+export class Modal extends Component {
+    closeCallback = (event) => {
+        const { closeModal } = this.props;
+        if (event.key === 'Escape') {
+            closeModal();
         }
-    })
-    return <div className="Overlay">
-        <div className="Modal">
-            <img src={image} alt={image} />
+    }
+
+    componentDidMount() {
+        window.addEventListener('keydown', this.closeCallback)
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('keydown', this.closeCallback)
+    }
+
+    render() {
+        const { image } = this.props;
+        
+        return <div className="Overlay">
+            <div className="Modal">
+                <img src={image} alt={image} />
+            </div>
         </div>
-    </div>
+    }
 }

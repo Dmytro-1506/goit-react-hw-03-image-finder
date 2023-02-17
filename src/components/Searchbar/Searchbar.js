@@ -1,6 +1,12 @@
-export const Searchbar = ({ onSubmit }) => {
+export const Searchbar = ({ prevRequest, onSubmit }) => {
+    const checkRequest = (event) => {
+        event.preventDefault();
+        const requestName = event.target.searchInput.value
+        if (prevRequest !== requestName) { onSubmit(requestName) }
+        event.target.reset();
+    }
     return <header className="Searchbar">
-        <form className="SearchForm" onSubmit={onSubmit}>
+        <form className="SearchForm" onSubmit={checkRequest}>
             <button type="submit" className="SearchForm-button">
                 <span className="SearchForm-button-label">Search</span>
             </button>
