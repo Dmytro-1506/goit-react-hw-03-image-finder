@@ -9,21 +9,17 @@ export class Modal extends Component {
     }
 
     componentDidMount() {
-        const overlay = document.querySelector('.Overlay')
         window.addEventListener('keydown', this.closeCallback)
-        overlay.addEventListener('click', this.closeCallback)
     }
 
     componentWillUnmount() {
-        const overlay = document.querySelector('.Overlay')
         window.removeEventListener('keydown', this.closeCallback)
-        overlay.removeEventListener('click', this.closeCallback)
     }
 
     render() {
         const { image } = this.props;
         
-        return <div className="Overlay" >
+        return <div className="Overlay" onClick={this.closeCallback} >
             <div className="Modal">
                 <img src={image} alt={image} />
             </div>
