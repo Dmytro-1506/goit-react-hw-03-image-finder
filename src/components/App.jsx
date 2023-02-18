@@ -59,7 +59,7 @@ export class App extends Component {
         <ImageGalleryItem images={images} openModal={this.openModal} />
       </ImageGallery>
       {loading && <Loader />}
-      {(page < total/12) && <Button loadMore={this.onClickLoadMore} />}
+      {(page < Math.ceil(total / 12)) && <Button loadMore={this.onClickLoadMore} />}
       {modalIsOpen && <Modal image={largeImage} closeModal={this.closeModal} />}
     </div>
     )
